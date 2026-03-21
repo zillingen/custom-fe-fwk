@@ -39,6 +39,9 @@ const createElementNode = (vdom: VElementNode, parentEl: HTMLElement) => {
   const { tag, props, children } = vdom
 
   const element = document.createElement(tag)
+  if (!element) {
+    throw new Error(`Can't create element for ${tag}`)
+  }
   addProps(element, props, vdom)
   vdom.el = element
 

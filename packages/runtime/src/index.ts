@@ -1,3 +1,4 @@
+import { destroyDom } from './destroy-dom';
 import { h, hFragment } from './h';
 import { mountDom } from './mount-dom';
 import { lipsum } from './utils/text';
@@ -22,15 +23,30 @@ const exVdom = hFragment([
 console.log('vdom:', vdom)
 console.log('exVdom:', exVdom)
 
-const blog = h('div', { class: 'blog-vdom blog--v0.0.1', 'data-testid': 'blog-wrapper' }, [
-  h('h1', { class: 'title title-s1' }, ['My news blog']),
-  h('section', { class: 'blog-list-section', 'data-testid': 'blog-list' }, [
-    h('p', { class: 'post' }, [lipsum(1).at(0)])
-  ])
-])
+const newAbz = hFragment([
+    h('h1', { class: 'abz-title abz-title--main', 'data-testid': 'abz_title' }),
+    h('p', { class: 'article article--main' }, [
+        hFragment([
+            ...lipsum(3),
+            h('p', {}, [
+                'LINK PARAGRAPH',
+                h('a', { class: 'wiki-link', href: 'http://localhost/winikilne1', target: '_blank' }, ['Wini link'])
+            ])
+        ])
+    ])
+]);
+// const newAbzWrapped = h('div', { class: 'new-aBz--wrapper' }, [newAbz])
 
-const el = document.querySelector('.ContentWrapper-module__contentContainer--AGolz')
+const el = document.querySelector<HTMLElement>('.IssueViewer-module__mainContainer--PhquW')
 
-if (el) {
-  mountDom(blog, el as HTMLElement)
+if (!el) {
+  throw new Error('Posts container not found')
 }
+console.log('remove Childs')
+el.childNodes.forEach((child) => child.remove())
+console.log('mount Blog')
+mountDom(newAbz, el);
+console.log('vDOM mounted', JSON.stringify(newAbz, null, 2))
+
+// ------ destroy DOM -----------
+destroyDom(newAbz)

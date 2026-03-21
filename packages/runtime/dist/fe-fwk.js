@@ -1,3 +1,29 @@
+const entries = (obj) => {
+    return Object.entries(obj);
+};
+
+const addEventListeners = (listeners = {}, el) => {
+    const addedListeners = {};
+    entries(listeners).forEach(([eventName, handler]) => {
+        if (handler && el) {
+            const listener = addEventListener(eventName, handler, el);
+            addedListeners[eventName] = listener;
+        }
+    });
+    return addedListeners;
+};
+const addEventListener = (eventName, handler, el) => {
+    el.addEventListener(eventName, handler);
+    return handler;
+};
+const removeEventListeners = (listeners = {}, el) => {
+    entries(listeners).forEach(([eventName, listener]) => {
+        if (listener) {
+            el.removeEventListener(eventName, listener);
+        }
+    });
+};
+
 const withoutNulls = (arr) => arr.filter((el) => el != null);
 
 const DOM_TYPES = {
@@ -19,6 +45,41 @@ const hFragment = (vNodes) => ({
     type: DOM_TYPES.FRAGMENT,
     children: mapTextNodes(withoutNulls(vNodes))
 });
+
+const destroyDom = (vdom) => {
+    const { type } = vdom;
+    switch (type) {
+        case DOM_TYPES.TEXT:
+            removeTextNode(vdom);
+            break;
+        case DOM_TYPES.ELEMENT:
+            removeElementNode(vdom);
+            break;
+        case DOM_TYPES.FRAGMENT:
+            removeFragmentNodes(vdom);
+            break;
+        default:
+            throw new Error(` Can't destroy DOM from: ${vdom}`);
+    }
+    delete vdom.el;
+};
+const removeTextNode = (vdom) => {
+    const { el } = vdom;
+    el?.remove();
+};
+const removeElementNode = (vdom) => {
+    const { el, children, listeners } = vdom;
+    el?.remove();
+    children?.forEach(destroyDom);
+    if (listeners && el) {
+        removeEventListeners(listeners, el);
+        delete vdom.listeners;
+    }
+};
+const removeFragmentNodes = (vdom) => {
+    const { children } = vdom;
+    children.forEach(destroyDom);
+};
 
 const setAttributes = (el, attrs) => {
     const { class: className, style, ...otherAttrs } = attrs;
@@ -47,11 +108,6 @@ const setClass = (el, className) => {
 const setStyle = (el, name, value) => {
     el.style.setProperty(name, value);
 };
-/*
-const removeStyle = (el: HTMLElement, name: string) => {
-  el.style.setProperty(name, null)
-}
-  */
 const setAttribute = (el, name, value) => {
     if (value === null) {
         removeAttribute(el, name);
@@ -62,21 +118,6 @@ const setAttribute = (el, name, value) => {
 };
 const removeAttribute = (el, name) => {
     el.removeAttribute(name);
-};
-
-const addEventListeners = (listeners = {}, el) => {
-    const addedListeners = {};
-    Object.entries(listeners).forEach(([eventName, handler]) => {
-        if (handler) {
-            const listener = addEventListener(eventName, handler, el);
-            addedListeners[eventName] = listener;
-        }
-    });
-    return addedListeners;
-};
-const addEventListener = (eventName, handler, el) => {
-    el.addEventListener(eventName, handler);
-    return handler;
 };
 
 const mountDom = (vdom, parentEl) => {
@@ -108,6 +149,9 @@ const createFragmentNodes = (vdom, parentEl) => {
 const createElementNode = (vdom, parentEl) => {
     const { tag, props, children } = vdom;
     const element = document.createElement(tag);
+    if (!element) {
+        throw new Error(`Can't create element for ${tag}`);
+    }
     addProps(element, props, vdom);
     vdom.el = element;
     children?.forEach((child) => mountDom(child, element));
@@ -141,13 +185,27 @@ const exVdom = hFragment([
 ]);
 console.log('vdom:', vdom);
 console.log('exVdom:', exVdom);
-const blog = h('div', { class: 'blog-vdom blog--v0.0.1', 'data-testid': 'blog-wrapper' }, [
-    h('h1', { class: 'title title-s1' }, ['My news blog']),
-    h('section', { class: 'blog-list-section', 'data-testid': 'blog-list' }, [
-        h('p', { class: 'post' }, [lipsum(1).at(0)])
+const newAbz = hFragment([
+    h('h1', { class: 'abz-title abz-title--main', 'data-testid': 'abz_title' }),
+    h('p', { class: 'article article--main' }, [
+        hFragment([
+            ...lipsum(3),
+            h('p', {}, [
+                'LINK PARAGRAPH',
+                h('a', { class: 'wiki-link', href: 'http://localhost/winikilne1', target: '_blank' }, ['Wini link'])
+            ])
+        ])
     ])
 ]);
-const el = document.querySelector('.ContentWrapper-module__contentContainer--AGolz');
-if (el) {
-    mountDom(blog, el);
+// const newAbzWrapped = h('div', { class: 'new-aBz--wrapper' }, [newAbz])
+const el = document.querySelector('.IssueViewer-module__mainContainer--PhquW');
+if (!el) {
+    throw new Error('Posts container not found');
 }
+console.log('remove Childs');
+el.childNodes.forEach((child) => child.remove());
+console.log('mount Blog');
+mountDom(newAbz, el);
+console.log('vDOM mounted', JSON.stringify(newAbz, null, 2));
+// ------ destroy DOM -----------
+destroyDom(newAbz);

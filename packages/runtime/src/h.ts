@@ -7,8 +7,8 @@ export const DOM_TYPES = {
   FRAGMENT: 'fragment',
 } as const;
 
-export const h = (
-  tag: keyof HTMLElementTagNameMap,
+export const h = <K extends keyof HTMLElementTagNameMap>(
+  tag: K,
   props: VNodeProps = {},
   children: Array<VNode | string | null | undefined> = []
 ): VElementNode => {

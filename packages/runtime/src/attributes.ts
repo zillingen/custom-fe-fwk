@@ -1,4 +1,5 @@
 import type { VNodeProps } from './h.types'
+import { entries } from './utils/objects'
 
 export const setAttributes = (el: HTMLElement, attrs: Omit<VNodeProps, 'on'>): void => {
   const { class: className, style, ...otherAttrs } = attrs
@@ -8,7 +9,7 @@ export const setAttributes = (el: HTMLElement, attrs: Omit<VNodeProps, 'on'>): v
   }
 
   if (style) {
-    Object.entries((style)).forEach(([prop, value]) => {
+    entries((style)).forEach(([prop, value]) => {
       setStyle(el, prop, value)
     })
   }
@@ -16,8 +17,6 @@ export const setAttributes = (el: HTMLElement, attrs: Omit<VNodeProps, 'on'>): v
   for (const [name, value] of Object.entries(otherAttrs)) {
     setAttribute(el, name, value)
   }
-
-  // ...
 }
 
 const setClass = (el: HTMLElement, className: unknown) => {
@@ -35,12 +34,6 @@ const setClass = (el: HTMLElement, className: unknown) => {
 const setStyle = (el: HTMLElement, name: string, value: string | null) => {
   el.style.setProperty(name, value)
 }
-
-/*
-const removeStyle = (el: HTMLElement, name: string) => {
-  el.style.setProperty(name, null)
-}
-  */
 
 const setAttribute = (el: HTMLElement, name: string, value: unknown) => {
   if (value === null) {

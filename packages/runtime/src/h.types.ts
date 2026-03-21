@@ -4,18 +4,19 @@ export type DOM_TYPES_TYPE = typeof DOM_TYPES[keyof typeof DOM_TYPES]
 
 export type VNode = VElementNode | VTextNode | VFragmentNode
 
-export type EventName = keyof GlobalEventHandlersEventMap | (string & {})
+export type EventName = keyof GlobalEventHandlersEventMap // | (string & {})
 
 export type EventHandlers = Partial<{
   [K in EventName]: EventHandler
 }>
 
 export type VNodeProps = {
-  on?: EventHandlers
+  on?: EventHandlers,
+  class?: string | string[]
   [prop: string]: unknown
 }
 
-export type EventHandler = (...args: unknown[]) => unknown
+export type EventHandler = (this: ThisParameterType<HTMLElement>, ...args: unknown[]) => unknown
 
 export type VElementNode = {
   tag: keyof HTMLElementTagNameMap
