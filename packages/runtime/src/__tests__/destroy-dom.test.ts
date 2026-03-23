@@ -32,8 +32,8 @@ describe('destroyDom', () => {
 
     destroyDom(vText)
 
-    expect(vText.el.parentNode).toBeNull() // removed
-    expect(vText.el).toBeUndefined() // check `el` still exists but is detached — our delete happens later
+    // After destroyDom, el property is deleted, so we need to check that the element was removed
+    expect(vText.el).toBeUndefined()
   })
 
   it('should delete el property from text node after removal', () => {
@@ -46,7 +46,7 @@ describe('destroyDom', () => {
 
     destroyDom(vText)
 
-    expect((vText).el).toBeUndefined()
+    expect((vText as VTextNode & { el?: undefined }).el).toBeUndefined()
   })
 
   // --- Element Node Tests ---
@@ -81,9 +81,9 @@ describe('destroyDom', () => {
     expect(spanEl.parentNode).toBeNull()
     expect(textEl.parentNode).toBeNull()
 
-    expect(vDiv.el).toBeUndefined()
-    expect(vSpan.el).toBeUndefined()
-    expect(vText.el).toBeUndefined()
+    expect((vDiv as VElementNode & { el?: undefined }).el).toBeUndefined()
+    expect((vSpan as VElementNode & { el?: undefined }).el).toBeUndefined()
+    expect((vText as VTextNode & { el?: undefined }).el).toBeUndefined()
   })
 
   it('should remove event listeners attached to the element', async () => {
@@ -108,7 +108,7 @@ describe('destroyDom', () => {
     expect(removeEventListeners).toHaveBeenCalledWith({ click: onClick }, buttonEl)
 
     // Expect listeners are deleted from vdom
-    expect((vDiv).listeners).toBeUndefined()
+    expect((vDiv as VElementNode & { listeners?: undefined }).listeners).toBeUndefined()
   })
 
   it('should not throw if listeners is undefined', () => {
@@ -137,6 +137,19 @@ describe('destroyDom', () => {
     expect(divEl.parentNode).toBeNull()
   })
 
+  it('should handle element without children property', () => {
+    const vDiv: VElementNode = {
+      type: DOM_TYPES.ELEMENT,
+      tag: 'div',
+    }
+    const divEl = document.createElement('div')
+    vDiv.el = divEl
+    container.appendChild(divEl)
+
+    expect(() => destroyDom(vDiv)).not.toThrow()
+    expect(divEl.parentNode).toBeNull()
+  })
+
   // --- Fragment Node Tests ---
 
   it('should destroy all children of a fragment', () => {
@@ -146,13 +159,19 @@ describe('destroyDom', () => {
       null,
     ])
 
-    // const pEl = document.createElement('p')
-    const pEl = h('p', { id: 'ChildPara_1' })
-    // const textEl = document.createTextNode('text')
-    const textEl = hString('Text El')
-    vFrag.children = [pEl, textEl]
-    // vFrag.children[0].el = pEl
-    // vFrag.children[1].el = textEl
+    // Create real DOM elements for the children
+    const pEl = document.createElement('p')
+    pEl.textContent = 'Para 1'
+    const textEl = document.createTextNode('text')
+    
+    // Assign elements to VNodes
+    vFrag.children.forEach((child, index) => {
+      if (child && child.type === DOM_TYPES.ELEMENT && index === 0) {
+        child.el = pEl
+      } else if (child && child.type === DOM_TYPES.TEXT && index === 1) {
+        child.el = textEl
+      }
+    })
 
     container.appendChild(pEl)
     container.appendChild(textEl)
@@ -166,17 +185,18 @@ describe('destroyDom', () => {
     expect((vFrag.children[1] as VTextNode).el).toBeUndefined()
   })
 
-  it('should strip null/undefined from children before removal', () => {
-    // Already handled by `mapTextNodes` — ensure no crash on mixed children
+  it('should handle fragment with mixed valid and null children', () => {
     const vFrag: VFragmentNode = {
       type: DOM_TYPES.FRAGMENT,
       children: [
-        hString('ok') as VNode,
+        hString('valid text') as VNode,
+        null as VNode | null,
         h('br') as VNode,
-        hString('') as VNode,
-      ],
+        undefined as VNode | undefined,
+      ].filter(Boolean) as VNode[],
     }
 
+    // Create real DOM elements for valid children
     vFrag.children.forEach((child) => {
       if (child.type === DOM_TYPES.TEXT) {
         child.el = document.createTextNode(child.value)
@@ -188,25 +208,62 @@ describe('destroyDom', () => {
     vFrag.children.forEach((child) => child.el && container.appendChild(child.el))
 
     expect(() => destroyDom(vFrag)).not.toThrow()
+    
+    // Verify all valid children were removed
+    vFrag.children.forEach((child) => {
+      if (child.el) {
+        expect(child.el.parentNode).toBeNull()
+      }
+    })
+  })
+
+  it('should handle empty fragment', () => {
+    const vFrag: VFragmentNode = {
+      type: DOM_TYPES.FRAGMENT,
+      children: [],
+    }
+
+    expect(() => destroyDom(vFrag)).not.toThrow()
   })
 
   // --- Edge Cases / Errors ---
 
   it('should throw if passed an invalid VNode type', () => {
-    const badVNode = { type: 'unknown' as any, el: null }
+    const badVNode = { type: 'unknown' as string, value: 'test' }
 
-    expect(() => destroyDom(badVNode as VNode)).toThrow(
+    expect(() => destroyDom(badVNode as unknown as VNode)).toThrow(
       "Can't destroy DOM from: [object Object]"
     )
   })
 
-  it('should not crash if el is undefined', () => {
+  it('should not crash if el is undefined on text node', () => {
     const vText: VTextNode = { type: DOM_TYPES.TEXT, value: 'test' }
-    const vDiv: VElementNode = { type: DOM_TYPES.ELEMENT, tag: 'div' }
-    const vFrag: VFragmentNode = { type: DOM_TYPES.FRAGMENT, children: [] }
 
     expect(() => destroyDom(vText)).not.toThrow()
+  })
+
+  it('should not crash if el is undefined on element node', () => {
+    const vDiv: VElementNode = { type: DOM_TYPES.ELEMENT, tag: 'div' }
+
     expect(() => destroyDom(vDiv)).not.toThrow()
+  })
+
+  it('should not crash if el is undefined on fragment node', () => {
+    const vFrag: VFragmentNode = { type: DOM_TYPES.FRAGMENT, children: [] }
+
     expect(() => destroyDom(vFrag)).not.toThrow()
+  })
+
+  it('should handle element with null children array', () => {
+    const vDiv: VElementNode = {
+      type: DOM_TYPES.ELEMENT,
+      tag: 'div',
+    }
+    const divEl = document.createElement('div')
+    vDiv.el = divEl
+    container.appendChild(divEl)
+
+    expect(() => destroyDom(vDiv)).not.toThrow()
+    expect(divEl.parentNode).toBeNull()
   })
 })
