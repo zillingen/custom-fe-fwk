@@ -7,7 +7,7 @@ export type VNode = VElementNode | VTextNode | VFragmentNode
 export type EventName = keyof GlobalEventHandlersEventMap // | (string & {})
 
 export type EventHandlers = Partial<{
-  [K in EventName]: EventHandler
+  [K in EventName]: EventHandler | null | undefined
 }>
 
 export type VNodeProps = {

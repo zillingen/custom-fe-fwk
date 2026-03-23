@@ -4,8 +4,10 @@ const entries = (obj) => {
 
 const addEventListeners = (listeners = {}, el) => {
     const addedListeners = {};
+    if (!el)
+        return addedListeners;
     entries(listeners).forEach(([eventName, handler]) => {
-        if (handler && el) {
+        if (handler) {
             const listener = addEventListener(eventName, handler, el);
             addedListeners[eventName] = listener;
         }
@@ -17,6 +19,8 @@ const addEventListener = (eventName, handler, el) => {
     return handler;
 };
 const removeEventListeners = (listeners = {}, el) => {
+    if (!el)
+        return;
     entries(listeners).forEach(([eventName, listener]) => {
         if (listener) {
             el.removeEventListener(eventName, listener);
@@ -87,14 +91,13 @@ const setAttributes = (el, attrs) => {
         setClass(el, className);
     }
     if (style) {
-        Object.entries((style)).forEach(([prop, value]) => {
+        entries((style)).forEach(([prop, value]) => {
             setStyle(el, prop, value);
         });
     }
     for (const [name, value] of Object.entries(otherAttrs)) {
         setAttribute(el, name, value);
     }
-    // ...
 };
 const setClass = (el, className) => {
     el.className = '';
