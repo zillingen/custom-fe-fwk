@@ -19,17 +19,32 @@ class Dispatcher {
         this.#afterHandlers.push(handler);
         return () => {
             const idx = this.#afterHandlers.indexOf(handler);
-            this.#afterHandlers.splice(idx, 1);
+            if (idx !== -1) {
+                this.#afterHandlers.splice(idx, 1);
+            }
         };
     }
     dispatch(commandName, payload) {
-        if (this.#subs.has(commandName)) {
-            this.#subs.get(commandName)?.forEach((handler) => handler(payload));
+        const handlers = this.#subs.get(commandName);
+        if (handlers?.length) {
+            handlers.forEach((handler) => handler(payload));
         }
         else {
             console.warn(`No handlers for command: ${commandName}`);
+            return false;
         }
         this.#afterHandlers.forEach((handler) => handler());
+        return true;
+    }
+    hasSubscribers(commandName) {
+        return this.#subs.has(commandName) && this.#subs.get(commandName).length > 0;
+    }
+    getSubscriberCount(commandName) {
+        return this.#subs.get(commandName)?.length ?? 0;
+    }
+    clear() {
+        this.#subs.clear();
+        this.#afterHandlers.length = 0;
     }
 }
 
