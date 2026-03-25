@@ -19,7 +19,9 @@ export class Dispatcher {
     return () => {
       const idx = handlers.indexOf(handler)
 
-      handlers?.splice(idx, 1)
+      if (idx !== -1) {
+        handlers.splice(idx, 1)
+      }
     }
   }
 
@@ -38,14 +40,50 @@ export class Dispatcher {
     const handlers = this.#subs.get(commandName)
 
     if (handlers?.length) {
-      handlers.forEach((handler) => handler(payload))
+      let hasError = false
+      let error: unknown
+      
+      // Execute all handlers, catching errors but continuing
+      // Use a copy of the array to handle cases where handlers unsubscribe during execution
+      const handlersCopy = [...handlers]
+      handlersCopy.forEach((handler) => {
+        try {
+          handler(payload)
+        } catch (e) {
+          hasError = true
+          error = e
+        }
+      })
+      
+      // Always execute after handlers
+      this.#afterHandlers.forEach((handler) => {
+        try {
+          handler()
+        } catch {
+          // After handler errors should not prevent other after handlers from running
+          // but should be logged or handled appropriately
+        }
+      })
+      
+      // Re-throw the first error if any occurred
+      if (hasError) {
+        throw error
+      }
     } else {
       console.warn(`No handlers for command: ${commandName}`)
-      return false
+      
+      // Still execute after handlers even when no command handlers exist
+      this.#afterHandlers.forEach((handler) => {
+        try {
+          handler()
+        } catch {
+          // After handler errors should not prevent other after handlers from running
+          // but should be logged or handled appropriately
+        }
+      })
     }
 
-    this.#afterHandlers.forEach((handler) => handler())
-    return true
+    return Boolean(handlers?.length)
   }
 
   hasSubscribers(commandName: string): boolean {
