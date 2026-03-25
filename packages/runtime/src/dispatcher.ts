@@ -1,10 +1,10 @@
-import type { EventHandler } from './h.types'
+export type Handler = (payload?: unknown) => void | undefined
 
 export class Dispatcher {
-  #subs = new Map<string, EventHandler[]>()
-  #afterHandlers: EventHandler[] = []
+  #subs = new Map<string, Handler[]>()
+  #afterHandlers: Handler[] = []
 
-  subscribe(commandName: string, handler: EventHandler): () => void {
+  subscribe(commandName: string, handler: Handler): () => void {
     if (!this.#subs.has(commandName)) {
       this.#subs.set(commandName, [])
     }
@@ -23,7 +23,7 @@ export class Dispatcher {
     }
   }
 
-  afterEveryCommand(handler: EventHandler): () => void {
+  afterEveryCommand(handler: Handler): () => void {
     this.#afterHandlers.push(handler)
 
     return () => {

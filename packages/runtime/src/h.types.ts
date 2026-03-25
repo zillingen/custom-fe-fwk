@@ -16,7 +16,7 @@ export type VNodeProps = {
   [prop: string]: unknown
 }
 
-export type EventHandler = (this: ThisParameterType<HTMLElement>, ...args: unknown[]) => unknown
+export type EventHandler = (this: ThisParameterType<HTMLElement>, payload?: unknown) => void | undefined
 
 export type VElementNode = {
   tag: keyof HTMLElementTagNameMap

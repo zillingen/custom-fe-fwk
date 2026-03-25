@@ -10,7 +10,7 @@ export type VNodeProps = {
     class?: string | string[];
     [prop: string]: unknown;
 };
-export type EventHandler = (this: ThisParameterType<HTMLElement>, ...args: unknown[]) => unknown;
+export type EventHandler = (this: HTMLElement, event: Event) => void | undefined;
 export type VElementNode = {
     tag: keyof HTMLElementTagNameMap;
     props?: VNodeProps;
