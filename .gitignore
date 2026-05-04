@@ -6,3 +6,4 @@ var/
 examples/
 .env
 .env.*
+coverage/

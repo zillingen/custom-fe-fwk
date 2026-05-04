@@ -1,6 +1,6 @@
 # Frontend framework project
 
-This document is for coding agents working in `/Users/zillingen/dev/custom-fe-fwk`.
+This document is for coding agents working in `custom-fe-fwk`.
 It captures practical commands and repository conventions inferred from the code.
 
 ## Repository shape
