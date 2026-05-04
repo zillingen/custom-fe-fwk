@@ -3,5 +3,6 @@ node_modules/
 dist/
 logs/
 var/
+examples/
 .env
 .env.*
