@@ -21,7 +21,7 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
           scope: '@zillingen'
 
-      - run: npm ci
+      - run: npm install
 
       - run: npm --workspace packages/compiler run build
       - run: npm --workspace packages/loader run build
