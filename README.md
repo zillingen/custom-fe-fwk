@@ -1,9 +1,7 @@
 # custom-fe-fwk
 
-[![NPM version](https://img.shields.io/npm/v/custom-fe-fwk.svg)](https://www.npmjs.com/package/custom-fe-fwk)
-[![License](https://img.shields.io/npm/l/custom-fe-fwk.svg)](https://github.com/your-org/custom-fe-fwk/blob/main/LICENSE)
+[![License](https://img.shields.io/npm/l/custom-fe-fwk.svg)](https://github.com/zillingen/custom-fe-fwk/blob/main/LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-2D79C7.svg?style=flat&logo=TypeScript&logoColor=white)](https://www.typescriptlang.org/)
-[![Bundle size](https://img.shields.io/bundlephobia/min/custom-fe-fwk)](https://bundlephobia.com/result?p=custom-fe-fwk)
 
 A minimal frontend framework built from scratch to teach web developers how frontend frameworks work under the hood.
 
@@ -17,16 +15,31 @@ A minimal frontend framework built from scratch to teach web developers how fron
 
 ## 🚀 Quick Start
 
+### Authentication
+
+The package is published to GitHub Packages. Create an `.npmrc` file in your project:
+
+```
+@zillingen:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
+```
+
+Then set your GitHub personal access token (with `read:packages` scope):
+
+```bash
+export NODE_AUTH_TOKEN=github_pat_YOUR_TOKEN_HERE
+```
+
 ### Installation
 
 ```bash
-npm install custom-fe-fwk
+npm install @zillingen/custom-fe-fwk
 ```
 
 ### Basic Usage
 
 ```javascript
-import { createApp, h } from 'custom-fe-fwk';
+import { createApp, h } from '@zillingen/custom-fe-fwk';
 
 // Define your application state
 const state = {
@@ -105,13 +118,15 @@ const view = (state, emit) => {
 
 ## 🏗️ Architecture
 
-The framework consists of three main parts:
+The framework consists of three main packages:
 
-1. **Runtime** (`custom-fe-fwk`) - Core framework functionality
-2. **Compiler** (`custom-fe-fwk-compiler`) - Template compilation (for advanced use)
-3. **Loader** (`custom-fe-fwk-loader`) - Module loading utilities (for advanced use)
+| Package | npm name |
+|---|---|
+| Runtime | `@zillingen/custom-fe-fwk` |
+| Compiler | `@zillingen/custom-fe-fwk-compiler` |
+| Loader | `@zillingen/custom-fe-fwk-loader` |
 
-For most educational purposes, you'll only need the main `custom-fe-fwk` package.
+For most educational purposes, you'll only need the main `@zillingen/custom-fe-fwk` package.
 
 ## 📖 Learning Resources
 
@@ -142,7 +157,7 @@ Each file contains comments explaining the concepts being demonstrated.
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/custom-fe-fwk.git
+git clone https://github.com/zillingen/custom-fe-fwk.git
 cd custom-fe-fwk
 
 # Install dependencies
