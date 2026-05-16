@@ -1,5 +1,6 @@
 # custom-fe-fwk
 
+[![Publish to GitHub Packages](https://github.com/zillingen/custom-fe-fwk/actions/workflows/publish.yml/badge.svg)](https://github.com/zillingen/custom-fe-fwk/actions/workflows/publish.yml)
 [![License](https://img.shields.io/npm/l/custom-fe-fwk.svg)](https://github.com/zillingen/custom-fe-fwk/blob/main/LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-2D79C7.svg?style=flat&logo=TypeScript&logoColor=white)](https://www.typescriptlang.org/)
 
