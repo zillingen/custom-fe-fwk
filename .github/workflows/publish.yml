@@ -21,15 +21,6 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
           scope: '@zillingen'
 
-      - name: Set version from tag
-        run: |
-          TAG_VERSION=${GITHUB_REF#refs/tags/v}
-          echo "Publishing version: $TAG_VERSION"
-          npm version --no-git-tag-version "$TAG_VERSION" \
-            --workspace packages/runtime \
-            --workspace packages/compiler \
-            --workspace packages/loader
-
       - run: npm ci
 
       - run: npm --workspace packages/compiler run build
