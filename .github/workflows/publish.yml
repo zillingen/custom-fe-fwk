@@ -1,0 +1,53 @@
+name: Publish to GitHub Packages
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@zillingen'
+
+      - name: Set version from tag
+        run: |
+          TAG_VERSION=${GITHUB_REF#refs/tags/v}
+          echo "Publishing version: $TAG_VERSION"
+          npm version --no-git-tag-version "$TAG_VERSION" \
+            --workspace packages/runtime \
+            --workspace packages/compiler \
+            --workspace packages/loader
+
+      - run: npm ci
+
+      - run: npm --workspace packages/compiler run build
+      - run: npm --workspace packages/loader run build
+      - run: npm --workspace packages/runtime run build
+
+      - run: npm --workspace packages/compiler run test:run
+      - run: npm --workspace packages/loader run test:run
+      - run: npm --workspace packages/runtime run test:run
+
+      - run: npm publish --workspace packages/runtime
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: npm publish --workspace packages/compiler
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: npm publish --workspace packages/loader
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

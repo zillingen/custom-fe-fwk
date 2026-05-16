@@ -1,5 +1,5 @@
 {
-  "name": "custom-fe-fwk",
+  "name": "@zillingen/custom-fe-fwk",
   "version": "1.0.0",
   "description": "A frontend framework to teach web developers how frontend frameworks work.",
   "keywords": [
@@ -12,9 +12,19 @@
   ],
   "main": "dist/fe-fwk.js",
   "type": "module",
+  "types": "dist/types/index.d.ts",
   "files": [
-    "dist/fe-fwk.js"
+    "dist/fe-fwk.js",
+    "dist/types/"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zillingen/custom-fe-fwk.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "public"
+  },
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c --watch",

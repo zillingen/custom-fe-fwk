@@ -1,5 +1,5 @@
 {
-  "name": "custom-fe-fwk-loader",
+  "name": "@zillingen/custom-fe-fwk-loader",
   "version": "1.0.0",
   "description": "A frontend framework to teach web developers how frontend frameworks work.",
   "keywords": [
@@ -14,6 +14,14 @@
   "files": [
     "dist/fe-fwk.js"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zillingen/custom-fe-fwk.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "public"
+  },
   "scripts": {
     "build": "rollup -c",
     "lint": "eslint src",
