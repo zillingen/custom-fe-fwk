@@ -34,13 +34,13 @@ export NODE_AUTH_TOKEN=github_pat_YOUR_TOKEN_HERE
 ### Installation
 
 ```bash
-npm install @zillingen/custom-fe-fwk
+npm install @zillingen/custom-fe-fwk-runtime
 ```
 
 ### Basic Usage
 
 ```javascript
-import { createApp, h } from '@zillingen/custom-fe-fwk';
+import { createApp, h } from '@zillingen/custom-fe-fwk-runtime';
 
 // Define your application state
 const state = {
@@ -123,11 +123,11 @@ The framework consists of three main packages:
 
 | Package | npm name |
 |---|---|
-| Runtime | `@zillingen/custom-fe-fwk` |
+| Runtime | `@zillingen/custom-fe-fwk-runtime` |
 | Compiler | `@zillingen/custom-fe-fwk-compiler` |
 | Loader | `@zillingen/custom-fe-fwk-loader` |
 
-For most educational purposes, you'll only need the main `@zillingen/custom-fe-fwk` package.
+For most educational purposes, you'll only need the main `@zillingen/custom-fe-fwk-runtime` package.
 
 ## 📖 Learning Resources
 
