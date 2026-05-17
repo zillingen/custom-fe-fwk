@@ -4,9 +4,9 @@ import type { VNode } from './h.types'
 import { mountDom } from './mount-dom'
 
 export type State = Record<string, unknown>
-export type Reducer<S extends State = State> = (state: S, payload: unknown) => S
+export type Reducer<S = State> = (state: S, payload: unknown) => S
 
-export interface App<S extends State = State> {
+export interface App<S = State> {
   state: S
   view: (state: S, emit: EmitFunction) => VNode
   reducers?: Record<string, (state: S, payload: unknown) => S>
@@ -19,7 +19,7 @@ export interface AppInstance {
 
 export type EmitFunction = (eventName: string, payload?: unknown) => void
 
-export function createApp<S extends State>({ state, view, reducers = {} }: App<S>): AppInstance {
+export function createApp<S>({ state, view, reducers = {} }: App<S>): AppInstance {
   let parentEl: HTMLElement | null = null
   let vdom: VNode | null = null
 
@@ -36,7 +36,7 @@ export function createApp<S extends State>({ state, view, reducers = {} }: App<S
     if (!reducer) continue
 
     const subs = dispatcher.subscribe(actionName, (payload) => {
-      state = reducer(state, payload) as S
+      state = reducer(state, payload)
     })
     subscriptions.push(subs)
   }
