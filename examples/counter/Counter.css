@@ -1,0 +1,55 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #f5f5f5;
+  color: #222;
+}
+
+.counter {
+  text-align: center;
+}
+
+.counter__value {
+  font-size: 6rem;
+  font-weight: 300;
+  margin-bottom: 1rem;
+}
+
+.counter__controls {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.counter__btn {
+  font-size: 2rem;
+  width: 4rem;
+  height: 4rem;
+  border: 2px solid #222;
+  border-radius: 0.5rem;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.counter__btn:hover {
+  background: #eee;
+}
+
+.counter__btn:active {
+  background: #ddd;
+}
