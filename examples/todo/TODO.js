@@ -1,5 +1,17 @@
 import { createApp, h, hFragment } from '../../packages/runtime/dist/fe-fwk.js'
 
+const MIN_TODO_LENGTH = 3
+
+const REDUCER_TYPES = Object.freeze({
+  UPDATE_CURRENT_TODO: 'update-current-todo',
+  ADD_TODO: 'add-todo',
+  START_EDITING_TODO: 'start-editing-todo',
+  EDIT_TODO: 'edit-todo',
+  SAVE_EDITED_TODO: 'save-edited-todo',
+  CANCEL_EDITING_TODO: 'cancel-editing-todo',
+  REMOVE_TODO: 'remove-todo',
+})
+
 const state = {
   currentTodo: '',
   edit: {
@@ -11,18 +23,18 @@ const state = {
 }
 
 const reducers = {
-  'update-current-todo': (state, currentTodo) => ({
+  [REDUCER_TYPES.UPDATE_CURRENT_TODO]: (state, currentTodo) => ({
     ...state,
     currentTodo,
   }),
 
-  'add-todo': (state) => ({
+  [REDUCER_TYPES.ADD_TODO]: (state) => ({
     ...state,
     currentTodo: '',
-    TODO: [...state.TODO, state.currentTodo],
+    TODO: [...state.TODO, state.currentTodo.trim()],
   }),
 
-  'start-editing-todo': (state, idx) => ({
+  [REDUCER_TYPES.START_EDITING_TODO]: (state, idx) => ({
     ...state,
     edit: {
       idx,
@@ -31,16 +43,23 @@ const reducers = {
     }
   }),
 
-  'edit-todo': (state, edited) => ({
+  [REDUCER_TYPES.EDIT_TODO]: (state, edited) => ({
     ...state,
     edit: {
       ...state.edit, edited,
     },
   }),
 
-  'save-edited-todo': (state) => {
+  [REDUCER_TYPES.SAVE_EDITED_TODO]: (state) => {
+    const trimmed = state.edit.edited.trim()
+    if (trimmed.length === 0) {
+      return {
+        ...state,
+        edit: { idx: null, original: null, edited: null },
+      }
+    }
     const TODO = [...state.TODO]
-    TODO[state.edit.idx] = state.edit.edited
+    TODO[state.edit.idx] = trimmed
 
     return {
       ...state,
@@ -49,14 +68,14 @@ const reducers = {
     }
   },
 
-  'cancel-editing-todo': (state) => ({
+  [REDUCER_TYPES.CANCEL_EDITING_TODO]: (state) => ({
     ...state,
     edit: { idx: null, original: null, edited: null },
   }),
 
-  'remove-todo': (state, idx) => ({
+  [REDUCER_TYPES.REMOVE_TODO]: (state, idx) => ({
     ...state,
-    TODO: TODO.filter((_, i) => i !== idx),
+    TODO: state.TODO.filter((_, i) => i !== idx),
   }),
 }
 
@@ -69,6 +88,7 @@ function App(state, emit) {
 }
 
 function CreateTodo({ currentTodo }, emit) {
+  const isValid = currentTodo.trim().length >= MIN_TODO_LENGTH
   return h('div', {}, [
     h('label', { for: 'todo-input' }, ['New TODO']),
     h(
@@ -78,10 +98,10 @@ function CreateTodo({ currentTodo }, emit) {
         id: 'todo-input',
         value: currentTodo,
         on: {
-          input: ({ target }) => emit('update-current-todo', target.value),
+          input: ({ target }) => emit(REDUCER_TYPES.UPDATE_CURRENT_TODO, target.value),
           keydown: ({ key }) => {
-            if (key === 'Enter' && currentTodo.length >= 3) {
-              emit('add-todo')
+            if (key === 'Enter' && isValid) {
+              emit(REDUCER_TYPES.ADD_TODO)
             }
           },
         },
@@ -90,10 +110,10 @@ function CreateTodo({ currentTodo }, emit) {
     h(
       'button', 
       {
-        disabled: currentTodo.length < 3,
         on: {
-          click: () => emit('add-todo'),
+          click: () => emit(REDUCER_TYPES.ADD_TODO),
         },
+        ...(isValid ? {} : { disabled: '' }),
       }, 
       ['Add']
     )
@@ -101,7 +121,7 @@ function CreateTodo({ currentTodo }, emit) {
 }
 
 function TodoList({ TODO, edit }, emit) {
-  h(
+  return h(
     'ul', 
     {},
     TODO.map((todo, i) => TodoItem({ todo, i, edit }, emit)) 
@@ -112,53 +132,54 @@ function TodoItem({ todo, i, edit }, emit) {
   const isEditing = edit.idx === i
 
   return isEditing
-    ? h('li', {}, [ // todo in edit mode
-      h(
-        'input', 
-        {
-          value: edit.edited,
-          on: {
-            input: ({ target }) => emit('edit-todo', target.value),
+    ? h('li', { key: i }, [
+        h(
+          'input', 
+          {
+            value: edit.edited,
+            on: {
+              input: ({ target }) => emit(REDUCER_TYPES.EDIT_TODO, target.value),
+            }
           }
-        }
-      ),
-      h(
-        'button', 
-        {
-          on: { 
-            click: () => emit('save-edited-todo')
+        ),
+        h(
+          'button', 
+          {
+            on: { 
+              click: () => emit(REDUCER_TYPES.SAVE_EDITED_TODO)
+            },
           },
-        },
-        ['Save']
-      ),
-      h(
-        'button', 
-        { 
-          on: { 
-            click: () => emit('cancel-editing-todo') 
-          }
-        }, 
-        ['Cancel']
-      )
-    ])
-    :
-    h('li', {}, [ // todo in view mode
-      h(
-        'span', {
-          on: { 
-            dblclick: () => emit('start-editing-todo', i) 
-          }
-        }, 
-        [todo]
-      ),
-      h(
-        'button',
-        {
-          click: () => emit('remove-todo', i),
-        },
-        ['Done']
-      )
-    ])
+          ['Save']
+        ),
+        h(
+          'button', 
+          { 
+            on: { 
+              click: () => emit(REDUCER_TYPES.CANCEL_EDITING_TODO) 
+            }
+          }, 
+          ['Cancel']
+        )
+      ])
+    : h('li', { key: i }, [
+        h(
+          'span', {
+            on: { 
+              dblclick: () => emit(REDUCER_TYPES.START_EDITING_TODO, i) 
+            }
+          }, 
+          [todo]
+        ),
+        h(
+          'button',
+          {
+            on: {
+              click: () => emit(REDUCER_TYPES.REMOVE_TODO, i),
+            },
+          },
+          ['Done']
+        )
+      ])
 }
 
 createApp({ state, reducers, view: App}).mount(document.body)
